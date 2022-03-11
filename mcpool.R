@@ -37,6 +37,8 @@ McPool <- R6::R6Class(
         id <- private$new_id()
         private$con[[id]] <- list(obj = NA)
       }
+      while (!private$check(private$con[[id]]$obj))
+        private$con[[id]]$obj <- private$connect()
       private$con[[id]]$in_use <- TRUE
       private$con[[id]]$last_use <- Sys.time()
       id
@@ -47,14 +49,11 @@ McPool <- R6::R6Class(
       private$cleanup()
     },
     get = function(id) {
-      if (missing(id)) {
-        while (!private$check(private$host))
-          private$host <- private$connect()
-        return(private$host)
-      }
-      while (!private$check(private$con[[id]]$obj))
-        private$con[[id]]$obj <- private$connect()
-      private$con[[id]]$obj
+      if (!missing(id))
+        return(private$con[[id]]$obj)
+      while (!private$check(private$host))
+        private$host <- private$connect()
+      private$host
     }
   ),
   private = list(
